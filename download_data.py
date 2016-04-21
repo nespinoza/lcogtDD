@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import argparse
 import calendar
 import requests
 import numpy as np
 
-################## USER OPTIONS ########################
+# Get user input:
+parser = argparse.ArgumentParser()
+parser.add_argument('-sdate',default='2016-04-01')
+parser.add_argument('-edate',default=None)
+args = parser.parse_args()
 
-# Starting date for which you want to check data from:
-starting_date = '2016-04-01'
-
-# End date (if None, then current date will be used):
-ending_date = None
-
-########################################################
+starting_date = args.sdate
+ending_date = args.edate
 
 # Get current date (in order to explore it, we need to leave
 # ending_date = ending_date + 1 day:
