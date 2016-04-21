@@ -16,17 +16,19 @@ Usage
 
 To use the code is simple: 
 
-1. Fill in your LCOGT archive username and password on the `userdata.dat` file. 
-   This will be read by the code in order to check for that. 
+1. Fill in your LCOGT archive `username`, `password`, data folder and the name of 
+   the proposals (separated by commas if there are more than one) for which you want 
+   to check data on the `userdata.dat` file. The `datafolder` variable which you have 
+   to fill is the data folder under which you want to download the LCOGT data. If you 
+   already have LCOGT data, this folder should contain another folder called `raw` and, 
+   inside, the frames ordered in sub-folders with the dates of these frames as names. 
+   For example, if `datafolder = 'myfolder'`, then the data for `20160404` is expected to be under
+   `myfolder/raw/20160404/`. 
 
 2. Select the dates between which you want to check data and fill them in the 
-   `download_data.py` file, along with the name(s) of the proposal(s) that you want 
-   to check data from. Also fill in the `datafolder` variable which is the data folder 
-   under which you want to download the LCOGT data. If you already have LCOGT data, 
-   this folder should contain another folder called `raw` and, inside, the frames 
-   ordered in sub-folders with the dates of these frames. For example, if 
-   `datafolder = 'myfolder'`, then the data for `20160404` is expected to be under 
-   `myfolder/raw/20160404/`.
+   `download_data.py`. The only required input here is the starting date; if the 
+   ending date is `None`, then the current date will be used and data will be downloaded 
+   from the starting date to today for the given proposal.
 
 3. Run the `download_data.py` code. This will download and save data from the starting 
    date to the end date.
