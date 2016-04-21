@@ -2,6 +2,7 @@ lcogtDD
 ---------
 
 Want to download data automatically from LCOGT? This is the python code to do it. 
+
 For quick usage, fill in your user data under `userdata.dat` and run the code 
 by doing:
 
