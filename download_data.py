@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import sys
 import argparse
 import calendar
 import requests
@@ -8,17 +9,31 @@ import numpy as np
 
 # Get user input:
 parser = argparse.ArgumentParser()
-parser.add_argument('-sdate',default='2016-04-01')
+parser.add_argument('-sdate',default=None)
 parser.add_argument('-edate',default=None)
 args = parser.parse_args()
 
 starting_date = args.sdate
 ending_date = args.edate
 
+print '\n\t ----------------------------------------------'
+print '\t                lcogtDD v.1.0.\n'
+print '\t Author: Nestor Espinoza (nespino@astro.puc.cl)'
+print '\t                         (github@nespinoza)'
+print '\t ----------------------------------------------\n'
+# Check that user input is ok:
+if starting_date is None:
+    print '\t lgogtDD input error: Please, insert a starting date from which'
+    print '\t                      to download data from. Usage example:\n'
+    print '\t                        python download_data -sdate 2016-04-01'
+    print '\n'
+    sys.exit()
+
 # Get current date (in order to explore it, we need to leave
 # ending_date = ending_date + 1 day:
 if ending_date is None:
     ending_date = time.strftime("%Y-%m-%d") 
+    print '\t > Checking data from '+starting_date+' to '+ending_date+'...\n'
     c_y,c_m,c_d = ending_date.split('-')
     if int(c_d)+1 <= calendar.monthrange(int(c_y),int(c_m))[-1]:
         ending_date = c_y+'-'+c_m+'-'+str(int(c_d)+1)
@@ -26,7 +41,8 @@ if ending_date is None:
         ending_date = c_y+'-'+str(int(c_m)+1)+'-01'
     else:
         ending_date = str(int(c_y)+1)+'-01-01'
-
+else:
+    print '\t > Checking data from '+starting_date+' to '+ending_date+'...\n'
 # Get data from user file:
 f = open('userdata.dat','r')
 username = (f.readline().split('=')[-1]).split()[0]
@@ -98,11 +114,12 @@ for prop in proposals:
         c_y,c_m,c_d = edate.split('-')
         if int(c_y) == e_y and int(c_m) == e_m and int(c_d) == e_d:
             break
-    print '\t Data collected for proposal '+prop+':'
-    print '\t > Number of frames collected:',len(prop_frame_names)
+    print '\t > Data collected for proposal '+prop+':'
+    print '\t   Number of frames collected:',len(prop_frame_names)
     all_frame_names = np.append(all_frame_names,prop_frame_names)
     all_frame_urls = np.append(all_frame_urls,prop_frame_urls)
 
+print '\n\t > Downloading frames...'
 for i in range(len(all_frame_names)):
     framename = all_frame_names[i]
     frameurl = all_frame_urls[i]
@@ -116,7 +133,8 @@ for i in range(len(all_frame_names)):
 
     # Check if file is already on folder. If not, download the file:    
     if not os.path.exists(datafolder+'/raw/'+date+'/'+framename):
-        print '\t File '+framename+' not found on '+datafolder+'/raw/'+date+'/.'
-        print '\t > Downloading ...'
+        print '\t   + File '+framename+' not found on '+datafolder+'/raw/'+date+'/.'
+        print '\t     Downloading ...'
         with open(datafolder+'/raw/'+date+'/'+framename,'wb') as f:
             f.write(requests.get(frameurl).content)
+print '\n\t Done!\n'
