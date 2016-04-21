@@ -47,3 +47,5 @@ To use the code is simple:
 
    will download all the data from 2016-04-01 to the current day.
 
+Note that the code checks if a given frame is already downloaded. If it is on the system, then 
+the frame is not downloaded.
