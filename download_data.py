@@ -15,9 +15,17 @@ ending_date = None
 
 ########################################################
 
-# Get current date:
+# Get current date (in order to explore it, we need to leave
+# ending_date = ending_date + 1 day:
 if ending_date is None:
     ending_date = time.strftime("%Y-%m-%d") 
+    c_y,c_m,c_d = ending_date.split('-')
+    if int(c_d)+1 <= calendar.monthrange(int(c_y),int(c_m))[-1]:
+        ending_date = c_y+'-'+c_m+'-'+str(int(c_d)+1)
+    elif int(c_m)+1 <= 12:
+        ending_date = c_y+'-'+str(int(c_m)+1)+'-01'
+    else:
+        ending_date = str(int(c_y)+1)+'-01-01'
 
 # Get data from user file:
 f = open('userdata.dat','r')
@@ -37,6 +45,7 @@ if not os.path.exists(datafolder+'/raw/'):
 def get_all_framenames(sdate,edate,headers,prop):
     response = requests.get('https://archive-api.lcogt.net/frames/?'+\
                     'limit=1000&'+\
+                    'RLEVEL=90&'+\
                     'start='+sdate+'&'+\
                     'end='+edate+'&'+\
                     'PROPID='+prop,\
@@ -49,9 +58,8 @@ def get_all_framenames(sdate,edate,headers,prop):
         fnames = np.array([])
         furls = np.array([])
         for frame in frames:
-            if frame['filename'].split('-')[-1] == 'e90.fits':
-                fnames = np.append(fnames,frame['filename'])
-                furls = np.append(furls,frame['url'])
+            fnames = np.append(fnames,frame['filename'])
+            furls = np.append(furls,frame['url'])
         return fnames,furls
 
 # Get LCOGT token:
@@ -91,7 +99,7 @@ for prop in proposals:
         if int(c_y) == e_y and int(c_m) == e_m and int(c_d) == e_d:
             break
     print '\t Data collected for proposal '+prop+':'
-    print '\t > Number of frames:',len(prop_frame_names)
+    print '\t > Number of frames collected:',len(prop_frame_names)
     all_frame_names = np.append(all_frame_names,prop_frame_names)
     all_frame_urls = np.append(all_frame_urls,prop_frame_urls)
 
