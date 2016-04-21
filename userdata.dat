@@ -1,2 +1,4 @@
-username = bilbo
-password = myprecious
+username    = bilbo
+password    = myprecious
+datafolder  = /home/mydatafolder
+proposals   = myprop1,myprop2

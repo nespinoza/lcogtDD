@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import time
 import calendar
 import requests
 import numpy as np
@@ -9,20 +10,27 @@ import numpy as np
 # Starting date for which you want to check data from:
 starting_date = '2016-04-01'
 
-# End date:
-ending_date = '2016-04-19'
-
-# Proposal(s) to check data from:
-proposals = ['myprop1','myprop2']
-
-# Folder where the data is (it is expected that 
-# e.g., datafolder+'/raw/20160404/' has the frames 
-# of 2016-04-04). If this is not the case, the folder and 
-# its subfolders will be created:
-datafolder = '/Users/nespinoza/lcogtdata'
+# End date (if None, then current date will be used):
+ending_date = None
 
 ########################################################
 
+# Get current date:
+if ending_date is None:
+    ending_date = time.strftime("%Y-%m-%d") 
+
+# Get data from user file:
+f = open('userdata.dat','r')
+username = (f.readline().split('=')[-1]).split()[0]
+password = (f.readline().split('=')[-1]).split()[0]
+datafolder = (f.readline().split('=')[-1]).split()[0]
+proposals = (f.readline().split('=')[-1]).split(',')
+
+for i in range(len(proposals)):
+    proposals[i] = proposals[i].split()[0]
+f.close()
+
+# Create raw folder inside data folder if not existent:
 if not os.path.exists(datafolder+'/raw/'):
     os.mkdir(datafolder+'/raw/')
 
@@ -45,12 +53,6 @@ def get_all_framenames(sdate,edate,headers,prop):
                 fnames = np.append(fnames,frame['filename'])
                 furls = np.append(furls,frame['url'])
         return fnames,furls
-
-# Get data from user file:
-f = open('userdata.dat','r')
-username = (f.readline().split('=')[-1]).split()[0]
-password = (f.readline().split('=')[-1]).split()[0]
-f.close()
 
 # Get LCOGT token:
 response = requests.post(
