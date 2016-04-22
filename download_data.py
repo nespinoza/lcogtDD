@@ -78,23 +78,25 @@ def get_all_framenames(sdate,edate,headers,prop):
             furls = np.append(furls,frame['url'])
         return fnames,furls
 
-# Get LCOGT token:
-response = requests.post(
-  'https://archive-api.lcogt.net/api-token-auth/',
-  data = {
-      'username': username,
-      'password': password
-    }
-).json()
+def get_headers_from_token(username,password):
+    # Get LCOGT token:
+    response = requests.post(
+       'https://archive-api.lcogt.net/api-token-auth/',
+      data = {
+          'username': username,
+          'password': password
+        }
+    ).json()
 
-token = response.get('token')
+    token = response.get('token')
 
-# Store the Authorization header
-headers = {'Authorization': 'Token ' + token}
+    # Store the Authorization header
+    headers = {'Authorization': 'Token ' + token}
+    return headers
+
+headers = get_headers_from_token(username,password)
 
 # Get frame names from starting to ending date:
-all_frame_names = np.array([])
-all_frame_urls = np.array([])
 for prop in proposals:
     prop_frame_names = np.array([])
     prop_frame_urls = np.array([])
@@ -109,32 +111,36 @@ for prop in proposals:
         else:
             edate = str(int(c_y)+1)+'-01-01'
         frame_names, frame_urls = get_all_framenames(sdate,edate,headers,prop)
-        prop_frame_names = np.append(prop_frame_names,frame_names)
-        prop_frame_urls = np.append(prop_frame_urls,frame_urls)
+        if len(frame_names)>0:
+            print '\t > '+str(len(frame_names))+' frames collected for proposal '+prop+' between '+sdate+' and '+edate+'...'
+            print '\t > Downloading frames...'
+            for i in range(len(frame_names)):
+                framename = frame_names[i]
+                frameurl = frame_urls[i]
+
+                # Get date of current image frame:
+                date = framename.split('-')[2]
+
+                # Create new folder with the date if not already there:
+                if not os.path.exists(datafolder+'/raw/'+date+'/'):
+                    os.mkdir(datafolder+'/raw/'+date+'/')
+
+                # Check if file is already on folder. If not, download the file:
+                if not os.path.exists(datafolder+'/raw/'+date+'/'+framename):
+                    print '\t   + File '+framename+' not found on '+datafolder+'/raw/'+date+'/.'
+                    print '\t     Downloading ...'
+                    content = requests.get(frameurl).content
+                    if 'expired' in content.lower():
+                        print '\t > Session expired. Logging in again...'
+                        edate = sdate
+                    else:
+                        with open(datafolder+'/raw/'+date+'/'+framename,'wb') as f:
+                            f.write(content)
         c_y,c_m,c_d = edate.split('-')
         if int(c_y) == e_y and int(c_m) == e_m and int(c_d) == e_d:
             break
-    print '\t > Data collected for proposal '+prop+':'
-    print '\t   Number of frames collected:',len(prop_frame_names)
-    all_frame_names = np.append(all_frame_names,prop_frame_names)
-    all_frame_urls = np.append(all_frame_urls,prop_frame_urls)
+        else:
+            # Get new headers/tokens to bypass apparent download limit that corrupt files:
+            headers = get_headers_from_token(username,password)
 
-print '\n\t > Downloading frames...'
-for i in range(len(all_frame_names)):
-    framename = all_frame_names[i]
-    frameurl = all_frame_urls[i]
-
-    # Get date of current image frame:
-    date = framename.split('-')[2]
-
-    # Create new folder with the date if not already there:
-    if not os.path.exists(datafolder+'/raw/'+date+'/'):
-        os.mkdir(datafolder+'/raw/'+date+'/')
-
-    # Check if file is already on folder. If not, download the file:    
-    if not os.path.exists(datafolder+'/raw/'+date+'/'+framename):
-        print '\t   + File '+framename+' not found on '+datafolder+'/raw/'+date+'/.'
-        print '\t     Downloading ...'
-        with open(datafolder+'/raw/'+date+'/'+framename,'wb') as f:
-            f.write(requests.get(frameurl).content)
 print '\n\t Done!\n'
