@@ -17,7 +17,7 @@ starting_date = args.sdate
 ending_date = args.edate
 
 print '\n\t ----------------------------------------------'
-print '\t                lcogtDD v.1.0.\n'
+print '\t                lcogtDD v.1.1.\n'
 print '\t Author: Nestor Espinoza (nespino@astro.puc.cl)'
 print '\t                         (github@nespinoza)'
 print '\t ----------------------------------------------\n'
@@ -58,9 +58,23 @@ f.close()
 if not os.path.exists(datafolder+'/raw/'):
     os.mkdir(datafolder+'/raw/')
 
-def get_all_framenames(sdate,edate,headers,prop):
+def download_frames(sdate,edate,headers,prop,datafolder):
+    """
+      This function downlads all the frames for a given range of dates, querying 
+      50 frames at a time (i.e., if 150 frames have to be downloaded, the process 
+      is repeated 3 times, each time downloading 50 frames). This number 
+      assumes connections can be as bad as to be able to download only ~1 Mb per 
+      minute (each get request shares file urls that last 48 hours only), assuming 
+      60 MB frames (worst case scenarios).
+ 
+      It returns the number of total identified frames for the given range and the 
+      number of frames downloaded (which is equal to the number of identified frames 
+      if no data for that time range was detected on the system).
+    """
+    nidentified = 0
+    ndownloaded = 0
     response = requests.get('https://archive-api.lcogt.net/frames/?'+\
-                    'limit=1000&'+\
+                    'limit=2&'+\
                     'RLEVEL=90&'+\
                     'start='+sdate+'&'+\
                     'end='+edate+'&'+\
@@ -68,17 +82,37 @@ def get_all_framenames(sdate,edate,headers,prop):
                     headers=headers).json()
 
     frames = response['results']
-    if len(frames) == 0:
-        return np.array([]),np.array([])
-    else:
-        fnames = np.array([])
-        furls = np.array([])
-        for frame in frames:
-            fnames = np.append(fnames,frame['filename'])
-            furls = np.append(furls,frame['url'])
-        return fnames,furls
+    if len(frames) != 0:
+        print '\t > Frames identified for the '+sdate+'/'+edate+' period. Checking frames...'
+        while True:
+            for frame in frames:
+                nidentified += 1
+                # Get date of current image frame:
+                date = frame['filename'].split('-')[2]
+
+                # Create new folder with the date if not already there:
+                if not os.path.exists(datafolder+'/raw/'+date+'/'):
+                    os.mkdir(datafolder+'/raw/'+date+'/')
+
+                # Check if file is already on folder. If not, download the file:
+                if not os.path.exists(datafolder+'/raw/'+date+'/'+frame['filename']):
+                    print '\t   + File '+frame['filename']+' not found on '+datafolder+'/raw/'+date+'/.'
+                    print '\t     Downloading ...'
+                    with open(datafolder+'/raw/'+date+'/'+frame['filename'],'wb') as f:
+                        f.write(requests.get(frame['url']).content)
+                    ndownloaded += 1
+            if response.get('next'):
+                response = requests.get(response['next'],headers=headers).json()
+                frames = response['results']
+            else:
+                break
+    return nidentified,ndownloaded
+                 
 
 def get_headers_from_token(username,password):
+    """
+      This functions gets an authentication token from the LCOGT archive.
+    """
     # Get LCOGT token:
     response = requests.post(
        'https://archive-api.lcogt.net/api-token-auth/',
@@ -110,37 +144,17 @@ for prop in proposals:
             edate = c_y+'-'+str(int(c_m)+1)+'-01'
         else:
             edate = str(int(c_y)+1)+'-01-01'
-        frame_names, frame_urls = get_all_framenames(sdate,edate,headers,prop)
-        if len(frame_names)>0:
-            print '\t > '+str(len(frame_names))+' frames collected for proposal '+prop+' between '+sdate+' and '+edate+'...'
-            print '\t > Downloading frames...'
-            for i in range(len(frame_names)):
-                framename = frame_names[i]
-                frameurl = frame_urls[i]
 
-                # Get date of current image frame:
-                date = framename.split('-')[2]
+        # Download frames in the defined time ranges:
+        nidentified,ndownloaded = download_frames(sdate,edate,headers,prop,datafolder)
+        if nidentified != 0:
+            print '\t   Final count: '+str(nidentified)+' identified frames, downloaded '+\
+                  str(ndownloaded)+' new ones.'
 
-                # Create new folder with the date if not already there:
-                if not os.path.exists(datafolder+'/raw/'+date+'/'):
-                    os.mkdir(datafolder+'/raw/'+date+'/')
-
-                # Check if file is already on folder. If not, download the file:
-                if not os.path.exists(datafolder+'/raw/'+date+'/'+framename):
-                    print '\t   + File '+framename+' not found on '+datafolder+'/raw/'+date+'/.'
-                    print '\t     Downloading ...'
-                    content = requests.get(frameurl).content
-                    if 'expired' in content.lower():
-                        print '\t > Session expired. Logging in again...'
-                        edate = sdate
-                    else:
-                        with open(datafolder+'/raw/'+date+'/'+framename,'wb') as f:
-                            f.write(content)
+        # Get next year, month and day to look for. If it matches the user-defined 
+        # or current date, then we are done: 
         c_y,c_m,c_d = edate.split('-')
         if int(c_y) == e_y and int(c_m) == e_m and int(c_d) == e_d:
             break
-        else:
-            # Get new headers/tokens to bypass apparent download limit that corrupt files:
-            headers = get_headers_from_token(username,password)
 
 print '\n\t Done!\n'
