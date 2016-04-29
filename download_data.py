@@ -94,8 +94,10 @@ def download_frames(sdate,edate,headers,prop,datafolder):
                 if not os.path.exists(datafolder+'/raw/'+date+'/'):
                     os.mkdir(datafolder+'/raw/'+date+'/')
 
-                # Check if file is already on folder. If not, download the file:
-                if not os.path.exists(datafolder+'/raw/'+date+'/'+frame['filename']):
+                # Check if file is already on folder and that is not a _cat.fits. If not there 
+                # and is not a _cat.fits, download the file:
+                if not os.path.exists(datafolder+'/raw/'+date+'/'+frame['filename']) and\
+                   '_cat.fits' != frame['filename'][-9:]:
                     print '\t   + File '+frame['filename']+' not found on '+datafolder+'/raw/'+date+'/.'
                     print '\t     Downloading ...'
                     with open(datafolder+'/raw/'+date+'/'+frame['filename'],'wb') as f:
