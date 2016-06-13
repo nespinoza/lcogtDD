@@ -75,7 +75,7 @@ def download_frames(sdate,edate,headers,prop,datafolder):
     ndownloaded = 0
     response = requests.get('https://archive-api.lcogt.net/frames/?'+\
                     'limit=50&'+\
-                    'RLEVEL=90&'+\
+                    'RLEVEL=91&'+\
                     'start='+sdate+'&'+\
                     'end='+edate+'&'+\
                     'PROPID='+prop,\
