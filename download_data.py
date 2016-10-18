@@ -73,7 +73,7 @@ def download_frames(sdate,edate,headers,prop,datafolder):
     """
     nidentified = 0
     ndownloaded = 0
-    response = requests.get('https://archive-api.lcogt.net/frames/?'+\
+    response = requests.get('https://archive-api.lco.net/frames/?'+\
                     'limit=50&'+\
                     'RLEVEL=91&'+\
                     'start='+sdate+'&'+\
@@ -117,7 +117,7 @@ def get_headers_from_token(username,password):
     """
     # Get LCOGT token:
     response = requests.post(
-       'https://archive-api.lcogt.net/api-token-auth/',
+       'https://archive-api.lco.net/api-token-auth/',
       data = {
           'username': username,
           'password': password
