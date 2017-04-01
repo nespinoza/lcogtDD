@@ -48,5 +48,12 @@ To use the code is simple:
 
    will download all the data from 2016-04-01 to the current day.
 
+3. Optional: you can also add the proposal IDs in command line. To fetch data from proposals 
+   MyProp-001 and MyProp-002, for example, you can do:
+
+       python download_data.py -sdate 2016-04-01 -proposalID "MyProp-001,MyProp-002"
+
+   Note this will override the userdata.dat proposals, in order to preserve back-compatibility.
+
 Note that the code checks if a given frame is already downloaded. If it is on the system, then 
 the frame is not downloaded.

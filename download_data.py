@@ -11,10 +11,12 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('-sdate',default=None)
 parser.add_argument('-edate',default=None)
+parser.add_argument('-proposalID',default=None)
 args = parser.parse_args()
 
 starting_date = args.sdate
 ending_date = args.edate
+propID = args.proposalID
 
 print '\n\t ----------------------------------------------'
 print '\t                lcogtDD v.1.1.\n'
@@ -50,6 +52,10 @@ password = (f.readline().split('=')[-1]).split()[0]
 datafolder = (f.readline().split('=')[-1]).split()[0]
 proposals = (f.readline().split('=')[-1]).split(',')
 
+if propID is not None:
+    proposals = propID.split(',')
+
+print '\t > Proposals from which data will be fetched: ',','.join(proposals)
 for i in range(len(proposals)):
     proposals[i] = proposals[i].split()[0]
 f.close()
