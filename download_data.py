@@ -12,11 +12,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-sdate',default=None)
 parser.add_argument('-edate',default=None)
 parser.add_argument('-proposalID',default=None)
+parser.add_argument('-datafolder',default=None)
 args = parser.parse_args()
 
 starting_date = args.sdate
 ending_date = args.edate
 propID = args.proposalID
+dfolder = args.datafolder
 
 print '\n\t ----------------------------------------------'
 print '\t                lcogtDD v.1.1.\n'
@@ -54,6 +56,9 @@ proposals = (f.readline().split('=')[-1]).split(',')
 
 if propID is not None:
     proposals = propID.split(',')
+
+if dfolder is not None:
+    datafolder = dfolder
 
 print '\t > Proposals from which data will be fetched: ',','.join(proposals)
 for i in range(len(proposals)):

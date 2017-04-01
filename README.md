@@ -55,5 +55,12 @@ To use the code is simple:
 
    Note this will override the userdata.dat proposals, in order to preserve back-compatibility.
 
+4. Optional: you can also add the data folder in which the data will be stored. If you want to 
+   store the data of proposal MyProp-001 in "/home/myuser/myLCOGTdata", just do:
+
+       python download_data.py -sdate 2016-04-01 -proposalID "MyProp-001" --datafolder "/home/myuser/myLCOGTdata"
+
+   Note this will override the datafolder in userdata.dat, in order to preserve back-compatibility.
+
 Note that the code checks if a given frame is already downloaded. If it is on the system, then 
 the frame is not downloaded.
