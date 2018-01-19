@@ -50,6 +50,8 @@ def download_frames(sdate, edate, headers, prop, datafolder):
           headers (dict): authentication token from the LCO archive
           prop (list): List of proposal IDs to search for
           datafolder (string): Directory to put the data
+      Returns:
+          tuple: list of files found on the archive, list of files actually downloaded
 
     """
     nidentified = 0
