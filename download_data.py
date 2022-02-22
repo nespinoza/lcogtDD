@@ -58,10 +58,10 @@ def download_frames(sdate, edate, headers, prop, datafolder):
     ndownloaded = 0
     response = requests.get('https://archive-api.lco.global/frames/?' +
                             'limit=50&' +
-                            'RLEVEL=91&' +
+                            'reduction_level=91&' +
                             'start='+sdate+'&' +
                             'end='+edate+'&' +
-                            'PROPID=' + prop,
+                            'proposal_id=' + prop,
                             headers=headers).json()
 
     frames = response['results']
@@ -110,8 +110,8 @@ def get_headers_from_token(username, password):
       Returns:
           dict: LCO authentication token
     """
-    # Get LCOGT token:
-    response = requests.post('https://archive-api.lco.global/api-token-auth/',
+    # Get LCOGT token from the Observation Portal:
+    response = requests.post('https://observe.lco.global/api/api-token-auth/',
                              data={'username': username,
                                    'password': password}
                              ).json()
